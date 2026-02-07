@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #ffffff; /* เปลี่ยนเป็นสีขาว */
+            --bg-color: #ffffff;
             --box-color: #ffffff;
             --text-main: #4a4a4a;
             --text-sub: #666666;
@@ -29,7 +29,7 @@
         canvas {
             display: block; position: absolute; top: 0; left: 0; 
             z-index: 1; width: 100%; height: 100%;
-            filter: saturate(1.8) brightness(0.9) contrast(1.1); /* ปรับความสว่างพลุให้ชัดบนพื้นขาว */
+            filter: saturate(1.8) brightness(0.9) contrast(1.2);
         }
 
         #start-screen {
@@ -180,9 +180,22 @@
     </div>
 
     <script>
-        // 1. วันที่ 10 มีนาคม 2019
+        // 1. ตั้งค่าพื้นฐาน
         const startDate = new Date("2019-03-10T00:00:00"); 
+        const loveNotes = ["เทอเก่งมากนะ รู้มั้ย", "รักเทอนร้า", "สู้ๆ", "special person", "ขอบคุณที่อยู่ด้วยกัน"];
+        let currentNoteIndex = 0;
+        let fireworks = [], particles = [], mode = 0, timer = 0;
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let cw, ch;
 
+        function resize() { 
+            cw = window.innerWidth; ch = window.innerHeight;
+            canvas.width = cw; canvas.height = ch;
+        }
+        window.onresize = resize; resize();
+
+        // 2. ระบบนับเวลา
         function updateTimer() {
             const now = new Date();
             const diff = now - startDate;
@@ -195,70 +208,42 @@
         }
         setInterval(updateTimer, 1000);
 
-        // 2. ข้อความ "กดเมื่อคิดถึง" (เรียงลำดับ)
-        const loveNotes = [
-            "เทอเก่งมากนะ รู้มั้ย",
-            "รักเทอนร้า",
-            "สู้ๆ",
-            "special person",
-            "ขอบคุณที่อยู่ด้วยกัน"
-        ];
-        let currentNoteIndex = 0;
-        function showNextNote() {
-            const popup = document.getElementById('note-popup');
-            document.getElementById('note-content').innerText = loveNotes[currentNoteIndex];
-            popup.classList.add('show');
-            currentNoteIndex = (currentNoteIndex + 1) % loveNotes.length;
-        }
-
-        window.onclick = function(event) {
-            const popup = document.getElementById('note-popup');
-            if (event.target == popup || popup.classList.contains('show') && !event.target.closest('.love-note-btn')) {
-                popup.classList.remove('show');
-            }
-        }
-
-        // 3. Fireworks & Heart Shape
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        let cw, ch;
-        function resize() { 
-            cw = window.innerWidth; ch = window.innerHeight;
-            canvas.width = cw; canvas.height = ch;
-        }
-        window.onresize = resize; resize();
-
-        let fireworks = [], particles = [], mode = 0, timer = 0;
-
+        // 3. ระบบพลุหัวใจ (แก้ไขใหม่ให้ชัดเจน)
         class Particle {
-            constructor(x, y, hue, isHeart=false, angle=null) {
+            constructor(x, y, hue, isHeart = false, angle = null) {
                 this.x = x; this.y = y;
                 this.angle = angle || Math.random() * Math.PI * 2;
-                this.speed = isHeart ? 3 : Math.random() * 8 + 1;
-                this.friction = 0.95; this.gravity = 0.15;
-                this.hue = hue; this.alpha = 1; this.decay = 0.015;
+                this.speed = isHeart ? (Math.random() * 2 + 3) : (Math.random() * 5 + 2);
+                this.friction = 0.96;
+                this.gravity = 0.12;
+                this.hue = hue;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.01;
             }
             update(i) {
                 this.speed *= this.friction;
                 this.x += Math.cos(this.angle) * this.speed;
                 this.y += Math.sin(this.angle) * this.speed + this.gravity;
                 this.alpha -= this.decay;
-                if(this.alpha <= 0) particles.splice(i, 1);
+                if (this.alpha <= 0) particles.splice(i, 1);
             }
             draw() {
-                ctx.fillStyle = `hsla(${this.hue}, 100%, 60%, ${this.alpha})`;
-                ctx.fillRect(this.x, this.y, 2, 2);
+                ctx.fillStyle = `hsla(${this.hue}, 100%, 50%, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 1.8, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
-        function createHeart(x, y, hue) {
-            for (let i = 0; i < Math.PI * 2; i += 0.1) {
-                // สูตรหัวใจ: x = 16sin^3(t), y = 13cos(t) - 5cos(2t) - 2cos(3t) - cos(4t)
-                const tx = 16 * Math.pow(Math.sin(i), 3);
-                const ty = -(13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i));
+        function createHeartBurst(x, y, hue) {
+            const numParticles = 80; 
+            for (let i = 0; i < numParticles; i++) {
+                const t = (i / numParticles) * Math.PI * 2;
+                const tx = 16 * Math.pow(Math.sin(t), 3);
+                const ty = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
                 const angle = Math.atan2(ty, tx);
                 const p = new Particle(x, y, hue, true, angle);
-                p.speed = Math.sqrt(tx*tx + ty*ty) * 0.3; // ปรับความเร็วตามสูตรหัวใจ
+                p.speed = Math.sqrt(tx * tx + ty * ty) * 0.28; 
                 particles.push(p);
             }
         }
@@ -266,37 +251,40 @@
         class Firework {
             constructor(sx, sy, tx, ty, isSpecial) {
                 this.x = sx; this.y = sy; this.tx = tx; this.ty = ty;
-                this.dist = Math.hypot(tx-sx, ty-sy);
-                this.angle = Math.atan2(ty-sy, tx-sx);
-                this.speed = 2; this.isSpecial = isSpecial;
+                this.dist = Math.hypot(tx - sx, ty - sy);
+                this.angle = Math.atan2(ty - sy, tx - sx);
+                this.speed = 10;
+                this.isSpecial = isSpecial;
                 this.hue = Math.random() * 360;
             }
             update(i) {
-                this.x += Math.cos(this.angle) * 10;
-                this.y += Math.sin(this.angle) * 10;
-                if (Math.hypot(this.tx-this.x, this.ty-this.y) < 10) {
-                    if(this.isSpecial) createHeart(this.tx, this.ty, this.hue);
-                    else {
-                        for(let k=0; k<50; k++) particles.push(new Particle(this.tx, this.ty, this.hue));
-                    }
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                if (Math.hypot(this.tx - this.x, this.ty - this.y) < 15) {
+                    createHeartBurst(this.tx, this.ty, this.hue);
                     fireworks.splice(i, 1);
-                    if(this.isSpecial) triggerFinale();
+                    if (this.isSpecial) triggerFinale();
                 }
             }
             draw() {
                 ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`;
-                ctx.strokeRect(this.x, this.y, 2, 2);
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - Math.cos(this.angle) * 8, this.y - Math.sin(this.angle) * 8);
+                ctx.stroke();
             }
         }
 
+        // 4. การทำงานของหน้าจอ
         function loop() {
             requestAnimationFrame(loop);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; // ลางพลุบนพื้นขาว
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
             ctx.fillRect(0, 0, cw, ch);
             fireworks.forEach((f, i) => { f.draw(); f.update(i); });
             particles.forEach((p, i) => { p.draw(); p.update(i); });
             timer++;
-            if(mode === 1 && timer % 30 === 0) fireworks.push(new Firework(cw/2, ch, Math.random()*cw, Math.random()*ch*0.5, false));
+            if(mode === 1 && timer % 40 === 0) fireworks.push(new Firework(cw/2, ch, Math.random()*cw, Math.random()*ch*0.5, false));
         }
 
         function startShow() {
@@ -317,7 +305,7 @@
             }, 2500);
         }
 
-        // --- Puzzle & Photos (จากโค้ดเดิม) ---
+        // 5. ระบบจิ๊กซอว์
         function initPuzzle() {
             const board = document.getElementById('puzzle-board');
             let pIndices = [0,1,2,3,4,5,6,7,8];
@@ -358,6 +346,20 @@
                     document.getElementById('success-msg-overlay').style.display = 'none';
                     document.getElementById('content-box').classList.add('visible');
                 }, 2000);
+            }
+        }
+
+        function showNextNote() {
+            const popup = document.getElementById('note-popup');
+            document.getElementById('note-content').innerText = loveNotes[currentNoteIndex];
+            popup.classList.add('show');
+            currentNoteIndex = (currentNoteIndex + 1) % loveNotes.length;
+        }
+
+        window.onclick = function(event) {
+            const popup = document.getElementById('note-popup');
+            if (popup.classList.contains('show') && !event.target.closest('.love-note-btn')) {
+                popup.classList.remove('show');
             }
         }
     </script>
