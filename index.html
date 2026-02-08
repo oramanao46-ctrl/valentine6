@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Happy Valentine's Day - กอฟ & ทราย</title>
-    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #ffffff;
-            --box-color: #ffffff;
-            --text-main: #4a4a4a;
-            --text-sub: #666666;
-            --accent-pink: #ff8fab;
+            --accent-pink: #ff4d6d;
         }
 
         body {
@@ -22,125 +19,88 @@
             width: 100vw; height: 100dvh; touch-action: none; position: fixed; color: #333;
         }
 
-        #deco-layer { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 0; pointer-events: none; overflow: hidden; }
-        .floating-heart { position: absolute; bottom: -50px; font-size: 20px; opacity: 0.6; animation: floatUp linear infinite; }
-        @keyframes floatUp { to { transform: translateY(-110vh) rotate(360deg); } }
-
         canvas {
             display: block; position: absolute; top: 0; left: 0; 
             z-index: 1; width: 100%; height: 100%;
-            filter: saturate(1.8) brightness(0.9) contrast(1.2);
+            filter: saturate(1.8) contrast(1.2);
         }
 
+        /* --- หน้าจอเริ่ม --- */
         #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff;
-            z-index: 999; display: flex; justify-content: center; align-items: center; 
+            background: #fff; z-index: 999; display: flex; justify-content: center; align-items: center; 
             flex-direction: column; cursor: pointer; transition: opacity 0.8s ease;
         }
         
         .start-btn {
             padding: 15px 40px; border-radius: 50px;
-            background: #ff6a88; color: #fff;
-            font-family: 'Mali', cursive; font-size: 1.3rem; font-weight: 600;
-            box-shadow: 0 10px 20px rgba(255, 106, 136, 0.3); 
-            animation: pulseBtn 2s infinite; border: none;
+            background: #ff6a88; color: #fff; font-size: 1.3rem; font-weight: 600;
+            box-shadow: 0 10px 20px rgba(255, 106, 136, 0.3); border: none;
         }
-        @keyframes pulseBtn { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
+        /* --- หัวข้อและเวลา --- */
         #name-container {
             position: absolute; top: 12%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            z-index: 10; opacity: 0; pointer-events: none;
-            transition: all 1.2s ease-out; width: 100%; text-align: center;
+            transform: translate(-50%, -50%);
+            z-index: 10; opacity: 0; text-align: center; width: 100%;
+            transition: all 1s ease;
         }
-        #name-container.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-
-        .glowing-text {
-            font-family: 'Mali', cursive; font-weight: 700;
-            font-size: 2.8rem; color: #ff4d6d; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            white-space: nowrap; margin: 0; letter-spacing: 1px;
-        }
+        #name-container.visible { opacity: 1; }
+        .glowing-text { font-size: 2.5rem; color: #ff4d6d; margin: 0; }
 
         #love-timer-container {
-            margin-top: 15px; display: inline-block;
-            background: rgba(255, 77, 109, 0.1); padding: 8px 20px;
-            border-radius: 20px; backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 77, 109, 0.2);
-            text-align: center;
+            margin-top: 10px; background: rgba(255, 77, 109, 0.1);
+            padding: 8px 15px; border-radius: 20px; display: inline-block;
         }
-        .timer-label { font-size: 0.9rem; color: #ff4d6d; display: block; margin-bottom: 5px; }
-        #love-timer { font-size: 1rem; color: #444; font-weight: 500; }
         .timer-highlight { font-weight: 700; color: #ff4d6d; }
 
+        /* --- ระบบจิ๊กซอว์ --- */
         #puzzle-wrapper {
             position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.8s;
-            display: flex; flex-direction: column; align-items: center;
-            width: 85%; max-width: 300px;
-            background: #fff; color: var(--text-main);
-            padding: 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.5s;
+            background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         #puzzle-wrapper.active { opacity: 1; pointer-events: auto; }
         #puzzle-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; width: 240px; height: 300px; background: #eee; }
-        .puzzle-piece { background-image: url('photo1.jpg'); background-size: 240px 300px; cursor: pointer; }
-        .puzzle-piece.selected { outline: 3px solid #ff4d6d; z-index: 10; }
+        .puzzle-piece { background-image: url('photo1.jpg'); background-size: 240px 300px; cursor: pointer; border: 0.5px solid #fff; }
+        .puzzle-piece.selected { outline: 3px solid #ff4d6d; z-index: 10; transform: scale(0.95); }
 
-        #success-msg-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 40; pointer-events: none; opacity: 0; background: rgba(255,255,255,0.8); transition: opacity 0.5s;
-        }
-        .success-card { background: #ff4d6d; color: #fff; padding: 20px 40px; border-radius: 50px; font-size: 1.5rem; }
-
+        /* --- กล่องข้อความและ Slideshow --- */
         #content-box {
-            position: absolute; bottom: 0; left: 0; width: 100%; max-height: 80vh; min-height: 50%;
-            z-index: 20; display: flex; flex-direction: column; align-items: center;
-            padding-top: 25px; padding-bottom: 40px; opacity: 0; pointer-events: none;
-            transform: translateY(50px); transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
-            background: #ffffff; border-top: 5px solid #ffcad4; border-radius: 35px 35px 0 0;
+            position: absolute; bottom: 0; left: 0; width: 100%; max-height: 75vh;
+            z-index: 200; display: none; flex-direction: column; align-items: center;
+            padding: 30px 0; background: #ffffff; border-radius: 35px 35px 0 0;
             box-shadow: 0 -10px 30px rgba(0,0,0,0.05); overflow-y: auto;
         }
-        #content-box.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-
-        .title-msg { font-size: 1.6rem; color: #ff4d6d; font-weight: 700; margin-bottom: 10px; }
-        .body-msg { font-size: 1rem; color: #666; text-align: center; line-height: 1.6; padding: 0 25px; white-space: pre-line; }
+        #content-box.visible { display: flex; animation: slideUp 1s forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
         .photo-frame {
             background: #fff; padding: 10px 10px 35px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            width: 150px; height: 190px; transform: rotate(-3deg); margin: 20px 0;
-            cursor: pointer; transition: transform 0.3s;
+            width: 160px; height: 200px; transform: rotate(-2deg); margin: 15px 0; cursor: pointer;
         }
-        .photo-frame:active { transform: rotate(-3deg) scale(0.95); }
-        .couple-photo { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
-        .click-hint { font-size: 0.8rem; color: #999; margin-bottom: 15px; }
+        .couple-photo { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease; }
 
         .love-note-btn {
             background: linear-gradient(135deg, #ff9a9e 0%, #ff6a88 100%);
             border: none; border-radius: 30px; color: #fff; padding: 12px 30px;
-            font-family: 'Mali', cursive; font-size: 1.1rem; cursor: pointer; margin-bottom: 40px;
+            font-family: 'Mali', cursive; font-size: 1.1rem; cursor: pointer; margin-top: 10px;
         }
 
         #note-popup {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-            background: white; padding: 25px; border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 100; opacity: 0; pointer-events: none;
-            transition: 0.3s; text-align: center; width: 80%; max-width: 280px; border: 3px solid #ff9a9e;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 25px; border-radius: 20px; z-index: 300;
+            display: none; text-align: center; width: 250px; border: 3px solid #ff9a9e;
         }
-        #note-popup.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
-        .note-text { font-size: 1.2rem; color: #ff6a88; font-weight: 600; }
         .beating-heart { display: inline-block; animation: heartbeat 1.5s infinite; color: #ff4d6d; }
         @keyframes heartbeat { 0%, 100% {transform: scale(1);} 50% {transform: scale(1.2);} }
     </style>
 </head>
 <body>
     <audio id="bg-music" loop><source src="song.mp3" type="audio/mpeg"></audio>
-    <div id="deco-layer"></div>
     
     <div id="start-screen" onclick="startShow()">
         <div class="start-btn">แตะเพื่อเปิดของขวัญ 🎁</div>
-        <p style="color: #999; margin-top: 20px;">(Valentine's Day 2026 ❤️)</p>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -148,246 +108,147 @@
     <div id="name-container">
         <h1 class="glowing-text">กอฟ 💗 ทราย</h1>
         <div id="love-timer-container">
-            <span class="timer-label">เรารักกันมาตั้งแต่วันที่ 10 มี.ค. 2019</span>
-            <div id="love-timer">กำลังคำนวณ...</div>
+            <span id="love-timer">กำลังคำนวณ...</span>
         </div>
     </div>
 
     <div id="puzzle-wrapper">
-        <div class="puzzle-title" style="text-align:center">ต่อจิ๊กซอว์รูปเราให้ครบนะ 🧩</div>
+        <p style="text-align:center; margin-top:0;">ต่อจิ๊กซอว์รูปเราให้ครบนะ 🧩</p>
         <div id="puzzle-board"></div>
     </div>
 
-    <div id="success-msg-overlay">
-        <div class="success-card">เก่งมากค่ะ 💖</div>
-    </div>
-
     <div id="content-box">
-        <div class="title-msg">Happy Valentine's Day 🌹</div>
-        <div class="body-msg">
-            รักเทอนะ♥️
-            <span class="beating-heart">ปี 2026 นี้ก็ยังเป็นเทอคนเดิม</span>
-        </div>
+        <h2 style="color:#ff4d6d; margin:0;">Happy Valentine's Day 🌹</h2>
+        <p style="text-align:center; color:#666; margin:10px 20px;">รักเทอนะ❤️<br>ปี 2026 นี้ก็ยังเป็นเทอคนเดิม <span class="beating-heart">❤️</span></p>
         
         <div class="photo-frame" onclick="nextPhoto()">
-            <img src="photo1.jpg" id="slideshow-img" class="couple-photo">
+            <img src="photo1.jpg" id="main-img" class="couple-photo">
         </div>
-        <div class="click-hint">แตะที่รูปเพื่อดูรูปอื่นๆ 📸</div>
+        <p style="font-size: 0.8rem; color: #999;">แตะที่รูปเพื่อดูรูปอื่นๆ (${currentPhotoIndex+1}/3)</p>
 
-        <button class="love-note-btn" onclick="showNextNote()">💌 กดเมื่อคิดถึง</button>
+        <button class="love-note-btn" onclick="showNote()">💌 กดเมื่อคิดถึง</button>
     </div>
 
-    <div id="note-popup">
-        <div class="note-text" id="note-content">...</div>
-        <div style="font-size:0.8rem; color:#ccc; margin-top:10px;">(แตะที่ไหนก็ได้เพื่อปิด)</div>
+    <div id="note-popup" onclick="this.style.display='none'">
+        <div id="note-text" style="font-weight:600; color:#ff6a88; font-size:1.2rem;"></div>
+        <p style="font-size:0.7rem; color:#ccc; margin-top:10px;">(แตะเพื่อปิด)</p>
     </div>
 
     <script>
-        // --- 1. ข้อมูลพื้นฐาน ---
-        const startDate = new Date("2019-03-10T00:00:00"); 
-        const loveNotes = ["เทอเก่งมากนะ รู้มั้ย", "รักเทอนร้า", "สู้ๆ", "special person", "ขอบคุณที่อยู่ด้วยกัน"];
-        const photoList = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg']; // รายชื่อไฟล์รูปภาพ
-        
-        let currentNoteIndex = 0;
+        // --- ข้อมูล ---
+        const startDate = new Date("2019-03-10T00:00:00");
+        const photoList = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'];
+        const notes = ["เทอเก่งมากนะ รู้มั้ย", "รักเทอนร้า", "สู้ๆ", "special person", "ขอบคุณที่อยู่ด้วยกัน"];
         let currentPhotoIndex = 0;
-        let fireworks = [], particles = [], mode = 0, timer = 0;
-        let isChangingPhoto = false;
+        let currentNoteIndex = 0;
+        let mode = 0;
 
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        let cw, ch;
-
-        function resize() { 
-            cw = window.innerWidth; ch = window.innerHeight;
-            canvas.width = cw; canvas.height = ch;
-        }
-        window.onresize = resize; resize();
-
-        // --- 2. ฟังก์ชันเปลี่ยนรูปภาพ (Slideshow) ---
+        // --- ระบบ Slideshow ---
         function nextPhoto() {
-            if (isChangingPhoto) return;
-            isChangingPhoto = true;
-            
-            const imgElement = document.getElementById('slideshow-img');
-            imgElement.style.opacity = '0'; // ค่อยๆ จางออก
-            
+            const img = document.getElementById('main-img');
+            currentPhotoIndex = (currentPhotoIndex + 1) % photoList.length;
+            img.style.opacity = '0';
             setTimeout(() => {
-                currentPhotoIndex = (currentPhotoIndex + 1) % photoList.length;
-                imgElement.src = photoList[currentPhotoIndex];
-                
-                imgElement.onload = () => {
-                    imgElement.style.opacity = '1'; // ค่อยๆ ปรากฏ
-                    isChangingPhoto = false;
-                };
-            }, 300);
+                img.src = photoList[currentPhotoIndex];
+                img.onload = () => img.style.opacity = '1';
+                document.querySelector('.click-hint-text').innerText = `แตะที่รูปเพื่อดูรูปอื่นๆ (${currentPhotoIndex+1}/3)`;
+            }, 250);
         }
 
-        // --- 3. ระบบนับเวลา ---
+        // --- ระบบนับเวลา ---
         function updateTimer() {
-            const now = new Date();
-            const diff = now - startDate;
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((diff / 1000 / 60) % 60);
-            const seconds = Math.floor((diff / 1000) % 60);
-            document.getElementById('love-timer').innerHTML = 
-                `<span class="timer-highlight">${days}</span> วัน <span class="timer-highlight">${hours}</span> ชม. <span class="timer-highlight">${minutes}</span> นาที <span class="timer-highlight">${seconds}</span> วิ`;
+            const diff = new Date() - startDate;
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff / 3600000) % 24);
+            const m = Math.floor((diff / 60000) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            document.getElementById('love-timer').innerHTML = `เรารักกันมา <span class="timer-highlight">${d}</span> วัน ${h} ชม. ${m} นาที ${s} วิ`;
         }
         setInterval(updateTimer, 1000);
 
-        // --- 4. ระบบพลุหัวใจ ---
-        class Particle {
-            constructor(x, y, hue, isHeart = false, angle = null) {
-                this.x = x; this.y = y;
-                this.angle = angle || Math.random() * Math.PI * 2;
-                this.speed = isHeart ? (Math.random() * 2 + 3) : (Math.random() * 5 + 2);
-                this.friction = 0.96;
-                this.gravity = 0.12;
-                this.hue = hue;
-                this.alpha = 1;
-                this.decay = Math.random() * 0.015 + 0.01;
-            }
-            update(i) {
-                this.speed *= this.friction;
-                this.x += Math.cos(this.angle) * this.speed;
-                this.y += Math.sin(this.angle) * this.speed + this.gravity;
-                this.alpha -= this.decay;
-                if (this.alpha <= 0) particles.splice(i, 1);
-            }
-            draw() {
-                ctx.fillStyle = `hsla(${this.hue}, 100%, 50%, ${this.alpha})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 1.8, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
+        // --- พลุหัวใจ ---
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let particles = [], fireworks = [];
 
         function createHeartBurst(x, y, hue) {
-            const numParticles = 80; 
-            for (let i = 0; i < numParticles; i++) {
-                const t = (i / numParticles) * Math.PI * 2;
+            for (let i = 0; i < 70; i++) {
+                const t = (i / 70) * Math.PI * 2;
                 const tx = 16 * Math.pow(Math.sin(t), 3);
                 const ty = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-                const angle = Math.atan2(ty, tx);
-                const p = new Particle(x, y, hue, true, angle);
-                p.speed = Math.sqrt(tx * tx + ty * ty) * 0.28; 
-                particles.push(p);
-            }
-        }
-
-        class Firework {
-            constructor(sx, sy, tx, ty, isSpecial) {
-                this.x = sx; this.y = sy; this.tx = tx; this.ty = ty;
-                this.dist = Math.hypot(tx - sx, ty - sy);
-                this.angle = Math.atan2(ty - sy, tx - sx);
-                this.speed = 10;
-                this.isSpecial = isSpecial;
-                this.hue = Math.random() * 360;
-            }
-            update(i) {
-                this.x += Math.cos(this.angle) * this.speed;
-                this.y += Math.sin(this.angle) * this.speed;
-                if (Math.hypot(this.tx - this.x, this.ty - this.y) < 15) {
-                    createHeartBurst(this.tx, this.ty, this.hue);
-                    fireworks.splice(i, 1);
-                    if (this.isSpecial) triggerFinale();
-                }
-            }
-            draw() {
-                ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y);
-                ctx.lineTo(this.x - Math.cos(this.angle) * 8, this.y - Math.sin(this.angle) * 8);
-                ctx.stroke();
+                particles.push({
+                    x, y, hue, 
+                    vx: tx * 0.25, vy: ty * 0.25, 
+                    alpha: 1, decay: 0.015
+                });
             }
         }
 
         function loop() {
             requestAnimationFrame(loop);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-            ctx.fillRect(0, 0, cw, ch);
-            fireworks.forEach((f, i) => { f.draw(); f.update(i); });
-            particles.forEach((p, i) => { p.draw(); p.update(i); });
-            timer++;
-            if(mode === 1 && timer % 40 === 0) fireworks.push(new Firework(cw/2, ch, Math.random()*cw, Math.random()*ch*0.5, false));
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.alpha -= p.decay;
+                ctx.fillStyle = `hsla(${p.hue}, 100%, 50%, ${p.alpha})`;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 6.28); ctx.fill();
+                if(p.alpha <= 0) particles.splice(i, 1);
+            });
+
+            if(mode === 1 && Math.random() < 0.05) {
+                createHeartBurst(Math.random()*canvas.width, Math.random()*canvas.height*0.5, Math.random()*360);
+            }
         }
 
         function startShow() {
-            document.getElementById('start-screen').style.opacity = 0;
-            setTimeout(()=> document.getElementById('start-screen').style.display = 'none', 800);
-            document.getElementById('bg-music').play().catch(()=>{});
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('bg-music').play();
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             mode = 1; loop();
             setTimeout(() => {
-                fireworks.push(new Firework(cw/2, ch, cw/2, ch*0.35, true));
-            }, 4000);
-        }
-
-        function triggerFinale() {
-            document.getElementById('name-container').classList.add('visible');
-            setTimeout(() => {
+                document.getElementById('name-container').classList.add('visible');
                 initPuzzle();
-                document.getElementById('puzzle-wrapper').classList.add('active');
-            }, 2500);
+            }, 2000);
         }
 
-        // --- 5. ระบบจิ๊กซอว์ ---
+        // --- จิ๊กซอว์ ---
         function initPuzzle() {
+            const wrapper = document.getElementById('puzzle-wrapper');
             const board = document.getElementById('puzzle-board');
-            let pIndices = [0,1,2,3,4,5,6,7,8];
-            pIndices.sort(() => Math.random() - 0.5);
-            pIndices.forEach((idx) => {
+            wrapper.classList.add('active');
+            let indices = [0,1,2,3,4,5,6,7,8].sort(() => Math.random() - 0.5);
+            
+            indices.forEach((idx) => {
                 const piece = document.createElement('div');
                 piece.className = 'puzzle-piece';
-                const r = Math.floor(idx/3), c = idx%3;
-                piece.style.backgroundPosition = `-${c*80}px -${r*100}px`;
-                piece.dataset.index = idx;
+                piece.style.backgroundPosition = `-${(idx%3)*80}px -${Math.floor(idx/3)*100}px`;
+                piece.dataset.idx = idx;
                 piece.onclick = function() {
-                    if(window.selPiece) {
-                        let tmpIdx = this.dataset.index;
-                        let tmpPos = this.style.backgroundPosition;
-                        this.dataset.index = window.selPiece.dataset.index;
-                        this.style.backgroundPosition = window.selPiece.style.backgroundPosition;
-                        window.selPiece.dataset.index = tmpIdx;
-                        window.selPiece.style.backgroundPosition = tmpPos;
-                        window.selPiece.classList.remove('selected');
-                        window.selPiece = null;
-                        checkWin();
-                    } else {
-                        window.selPiece = this;
-                        this.classList.add('selected');
-                    }
+                    if(window.selected) {
+                        let tIdx = this.dataset.idx; let tBg = this.style.backgroundPosition;
+                        this.dataset.idx = window.selected.dataset.idx; this.style.backgroundPosition = window.selected.style.backgroundPosition;
+                        window.selected.dataset.idx = tIdx; window.selected.style.backgroundPosition = tBg;
+                        window.selected.classList.remove('selected'); window.selected = null;
+                        if(Array.from(board.children).every((p, i) => parseInt(p.dataset.idx) === i)) {
+                            // เมื่อชนะ: ปิดจิ๊กซอว์ทิ้งถาวร
+                            wrapper.classList.remove('active');
+                            setTimeout(() => { 
+                                wrapper.style.display = 'none';
+                                document.getElementById('content-box').classList.add('visible');
+                            }, 500);
+                        }
+                    } else { this.classList.add('selected'); window.selected = this; }
                 };
                 board.appendChild(piece);
             });
         }
 
-        function checkWin() {
-            const pieces = document.querySelectorAll('.puzzle-piece');
-            const win = Array.from(pieces).every((p, i) => parseInt(p.dataset.index) === i);
-            if(win) {
-                document.getElementById('puzzle-wrapper').style.opacity = 0;
-                document.getElementById('success-msg-overlay').classList.add('show');
-                setTimeout(() => {
-                    document.getElementById('success-msg-overlay').style.display = 'none';
-                    document.getElementById('content-box').classList.add('visible');
-                }, 2000);
-            }
-        }
-
-        // --- 6. ระบบป๊อปอัปข้อความ ---
-        function showNextNote() {
-            const popup = document.getElementById('note-popup');
-            document.getElementById('note-content').innerText = loveNotes[currentNoteIndex];
-            popup.classList.add('show');
-            currentNoteIndex = (currentNoteIndex + 1) % loveNotes.length;
-        }
-
-        window.onclick = function(event) {
-            const popup = document.getElementById('note-popup');
-            if (popup.classList.contains('show') && !event.target.closest('.love-note-btn')) {
-                popup.classList.remove('show');
-            }
+        function showNote() {
+            const p = document.getElementById('note-popup');
+            document.getElementById('note-text').innerText = notes[currentNoteIndex];
+            p.style.display = 'block';
+            currentNoteIndex = (currentNoteIndex + 1) % notes.length;
         }
     </script>
 </body>
