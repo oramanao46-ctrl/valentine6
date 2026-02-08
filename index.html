@@ -110,8 +110,11 @@
         .photo-frame {
             background: #fff; padding: 10px 10px 35px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             width: 150px; height: 190px; transform: rotate(-3deg); margin: 20px 0;
+            cursor: pointer; transition: transform 0.3s;
         }
-        .couple-photo { width: 100%; height: 100%; object-fit: cover; }
+        .photo-frame:active { transform: rotate(-3deg) scale(0.95); }
+        .couple-photo { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
+        .click-hint { font-size: 0.8rem; color: #999; margin-bottom: 15px; }
 
         .love-note-btn {
             background: linear-gradient(135deg, #ff9a9e 0%, #ff6a88 100%);
@@ -169,6 +172,7 @@
         <div class="photo-frame" onclick="nextPhoto()">
             <img src="photo1.jpg" id="slideshow-img" class="couple-photo">
         </div>
+        <div class="click-hint">แตะที่รูปเพื่อดูรูปอื่นๆ 📸</div>
 
         <button class="love-note-btn" onclick="showNextNote()">💌 กดเมื่อคิดถึง</button>
     </div>
@@ -179,11 +183,16 @@
     </div>
 
     <script>
-        // 1. ตั้งค่าพื้นฐาน
+        // --- 1. ข้อมูลพื้นฐาน ---
         const startDate = new Date("2019-03-10T00:00:00"); 
         const loveNotes = ["เทอเก่งมากนะ รู้มั้ย", "รักเทอนร้า", "สู้ๆ", "special person", "ขอบคุณที่อยู่ด้วยกัน"];
+        const photoList = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg']; // รายชื่อไฟล์รูปภาพ
+        
         let currentNoteIndex = 0;
+        let currentPhotoIndex = 0;
         let fireworks = [], particles = [], mode = 0, timer = 0;
+        let isChangingPhoto = false;
+
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
         let cw, ch;
@@ -194,7 +203,26 @@
         }
         window.onresize = resize; resize();
 
-        // 2. ระบบนับเวลา
+        // --- 2. ฟังก์ชันเปลี่ยนรูปภาพ (Slideshow) ---
+        function nextPhoto() {
+            if (isChangingPhoto) return;
+            isChangingPhoto = true;
+            
+            const imgElement = document.getElementById('slideshow-img');
+            imgElement.style.opacity = '0'; // ค่อยๆ จางออก
+            
+            setTimeout(() => {
+                currentPhotoIndex = (currentPhotoIndex + 1) % photoList.length;
+                imgElement.src = photoList[currentPhotoIndex];
+                
+                imgElement.onload = () => {
+                    imgElement.style.opacity = '1'; // ค่อยๆ ปรากฏ
+                    isChangingPhoto = false;
+                };
+            }, 300);
+        }
+
+        // --- 3. ระบบนับเวลา ---
         function updateTimer() {
             const now = new Date();
             const diff = now - startDate;
@@ -207,7 +235,7 @@
         }
         setInterval(updateTimer, 1000);
 
-        // 3. ระบบพลุหัวใจ (แก้ไขใหม่ให้ชัดเจน)
+        // --- 4. ระบบพลุหัวใจ ---
         class Particle {
             constructor(x, y, hue, isHeart = false, angle = null) {
                 this.x = x; this.y = y;
@@ -275,7 +303,6 @@
             }
         }
 
-        // 4. การทำงานของหน้าจอ
         function loop() {
             requestAnimationFrame(loop);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
@@ -304,7 +331,7 @@
             }, 2500);
         }
 
-        // 5. ระบบจิ๊กซอว์
+        // --- 5. ระบบจิ๊กซอว์ ---
         function initPuzzle() {
             const board = document.getElementById('puzzle-board');
             let pIndices = [0,1,2,3,4,5,6,7,8];
@@ -348,6 +375,7 @@
             }
         }
 
+        // --- 6. ระบบป๊อปอัปข้อความ ---
         function showNextNote() {
             const popup = document.getElementById('note-popup');
             document.getElementById('note-content').innerText = loveNotes[currentNoteIndex];
@@ -364,5 +392,3 @@
     </script>
 </body>
 </html>
-
-
