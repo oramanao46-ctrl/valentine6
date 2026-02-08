@@ -25,7 +25,6 @@
             filter: saturate(1.8) contrast(1.2);
         }
 
-        /* --- หน้าจอเริ่ม --- */
         #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #fff; z-index: 999; display: flex; justify-content: center; align-items: center; 
@@ -38,7 +37,6 @@
             box-shadow: 0 10px 20px rgba(255, 106, 136, 0.3); border: none;
         }
 
-        /* --- หัวข้อและเวลา --- */
         #name-container {
             position: absolute; top: 12%; left: 50%;
             transform: translate(-50%, -50%);
@@ -54,7 +52,6 @@
         }
         .timer-highlight { font-weight: 700; color: #ff4d6d; }
 
-        /* --- ระบบจิ๊กซอว์ --- */
         #puzzle-wrapper {
             position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
             z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.5s;
@@ -65,7 +62,6 @@
         .puzzle-piece { background-image: url('photo1.jpg'); background-size: 240px 300px; cursor: pointer; border: 0.5px solid #fff; }
         .puzzle-piece.selected { outline: 3px solid #ff4d6d; z-index: 10; transform: scale(0.95); }
 
-        /* --- กล่องข้อความและ Slideshow --- */
         #content-box {
             position: absolute; bottom: 0; left: 0; width: 100%; max-height: 75vh;
             z-index: 200; display: none; flex-direction: column; align-items: center;
@@ -98,113 +94,125 @@
 </head>
 <body>
     <audio id="bg-music" loop><source src="song.mp3" type="audio/mpeg"></audio>
-    
     <div id="start-screen" onclick="startShow()">
         <div class="start-btn">แตะเพื่อเปิดของขวัญ 🎁</div>
     </div>
-
     <canvas id="canvas"></canvas>
-    
     <div id="name-container">
         <h1 class="glowing-text">กอฟ 💗 ทราย</h1>
         <div id="love-timer-container">
             <span id="love-timer">กำลังคำนวณ...</span>
         </div>
     </div>
-
     <div id="puzzle-wrapper">
         <p style="text-align:center; margin-top:0;">ต่อจิ๊กซอว์รูปเราให้ครบนะ 🧩</p>
         <div id="puzzle-board"></div>
     </div>
-
     <div id="content-box">
         <h2 style="color:#ff4d6d; margin:0;">Happy Valentine's Day 🌹</h2>
-        <p style="text-align:center; color:#666; margin:10px 20px;">รักเทอนะ❤️<br> <span class="beating-heart">ปี 2026 นี้ก็ยังเป็นเทอคนเดิม</span></p>
-        
+        <p style="text-align:center; color:#666; margin:10px 20px;">รักเทอนะ❤️<br>ปี 2026 นี้ก็ยังเป็นเทอคนเดิม <span class="beating-heart">❤️</span></p>
         <div class="photo-frame" onclick="nextPhoto()">
             <img src="photo1.jpg" id="main-img" class="couple-photo">
         </div>
-        <p style="font-size: 0.8rem; color: #999;">แตะที่รูปเพื่อดูรูปอื่นๆ❤️p>
-
+        <p id="photo-hint" style="font-size: 0.8rem; color: #999;">แตะที่รูปเพื่อดูรูปอื่นๆ (1/3)</p>
         <button class="love-note-btn" onclick="showNote()">💌 กดเมื่อคิดถึง</button>
     </div>
-
     <div id="note-popup" onclick="this.style.display='none'">
         <div id="note-text" style="font-weight:600; color:#ff6a88; font-size:1.2rem;"></div>
         <p style="font-size:0.7rem; color:#ccc; margin-top:10px;">(แตะเพื่อปิด)</p>
     </div>
 
     <script>
-        // --- ข้อมูล ---
         const startDate = new Date("2019-03-10T00:00:00");
         const photoList = ['photo1.jpg', 'photo2.jpg', 'photo3.jpg'];
         const notes = ["เทอเก่งมากนะ รู้มั้ย", "รักเทอนร้า", "สู้ๆ", "special person", "ขอบคุณที่อยู่ด้วยกัน"];
-        let currentPhotoIndex = 0;
-        let currentNoteIndex = 0;
-        let mode = 0;
+        let currentPhotoIndex = 0, currentNoteIndex = 0, mode = 0;
+        const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
+        let particles = [], rockets = [];
 
-        // --- ระบบ Slideshow ---
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
         function nextPhoto() {
             const img = document.getElementById('main-img');
             currentPhotoIndex = (currentPhotoIndex + 1) % photoList.length;
             img.style.opacity = '0';
             setTimeout(() => {
                 img.src = photoList[currentPhotoIndex];
-                img.onload = () => img.style.opacity = '1';
-                document.querySelector('.click-hint-text').innerText = `แตะที่รูปเพื่อดูรูปอื่นๆ (${currentPhotoIndex+1}/3)`;
+                img.onload = () => {
+                    img.style.opacity = '1';
+                    document.getElementById('photo-hint').innerText = `แตะที่รูปเพื่อดูรูปอื่นๆ (${currentPhotoIndex+1}/3)`;
+                };
             }, 250);
         }
 
-        // --- ระบบนับเวลา ---
         function updateTimer() {
             const diff = new Date() - startDate;
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff / 3600000) % 24);
-            const m = Math.floor((diff / 60000) % 60);
-            const s = Math.floor((diff / 1000) % 60);
+            const d = Math.floor(diff / 86400000), h = Math.floor((diff / 3600000) % 24), m = Math.floor((diff / 60000) % 60), s = Math.floor((diff / 1000) % 60);
             document.getElementById('love-timer').innerHTML = `เรารักกันมา <span class="timer-highlight">${d}</span> วัน ${h} ชม. ${m} นาที ${s} วิ`;
         }
         setInterval(updateTimer, 1000);
 
-        // --- พลุหัวใจ ---
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        let particles = [], fireworks = [];
+        // --- ระบบพลุใหม่ ---
+        class Rocket {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.targetY = Math.random() * (canvas.height * 0.4);
+                this.speed = Math.random() * 3 + 5;
+                this.hue = Math.random() * 360;
+                this.trail = [];
+            }
+            update() {
+                this.trail.push({x: this.x, y: this.y});
+                if(this.trail.length > 10) this.trail.shift();
+                this.y -= this.speed;
+                if(this.y <= this.targetY) {
+                    createHeartBurst(this.x, this.y, this.hue);
+                    return false;
+                }
+                return true;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = `hsl(${this.hue}, 100%, 70%)`;
+                ctx.lineWidth = 2;
+                this.trail.forEach((p, i) => {
+                    ctx.globalAlpha = i / 10;
+                    ctx.lineTo(p.x, p.y);
+                });
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
 
         function createHeartBurst(x, y, hue) {
-            for (let i = 0; i < 70; i++) {
-                const t = (i / 70) * Math.PI * 2;
-                const tx = 16 * Math.pow(Math.sin(t), 3);
-                const ty = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-                particles.push({
-                    x, y, hue, 
-                    vx: tx * 0.25, vy: ty * 0.25, 
-                    alpha: 1, decay: 0.015
-                });
+            for (let i = 0; i < 75; i++) {
+                const t = (i / 75) * Math.PI * 2;
+                const tx = 16 * Math.pow(Math.sin(t), 3), ty = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                particles.push({ x, y, hue, vx: tx * 0.28, vy: ty * 0.28, alpha: 1, decay: 0.012 });
             }
         }
 
         function loop() {
             requestAnimationFrame(loop);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            rockets = rockets.filter(r => { r.draw(); return r.update(); });
             particles.forEach((p, i) => {
-                p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.alpha -= p.decay;
+                p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.alpha -= p.decay;
                 ctx.fillStyle = `hsla(${p.hue}, 100%, 50%, ${p.alpha})`;
-                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, 6.28); ctx.fill();
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, 6.28); ctx.fill();
                 if(p.alpha <= 0) particles.splice(i, 1);
             });
 
-            if(mode === 1 && Math.random() < 0.05) {
-                createHeartBurst(Math.random()*canvas.width, Math.random()*canvas.height*0.5, Math.random()*360);
-            }
+            if(mode === 1 && Math.random() < 0.03) rockets.push(new Rocket());
         }
 
         function startShow() {
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('bg-music').play();
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             mode = 1; loop();
             setTimeout(() => {
                 document.getElementById('name-container').classList.add('visible');
@@ -212,13 +220,10 @@
             }, 2000);
         }
 
-        // --- จิ๊กซอว์ ---
         function initPuzzle() {
-            const wrapper = document.getElementById('puzzle-wrapper');
-            const board = document.getElementById('puzzle-board');
+            const wrapper = document.getElementById('puzzle-wrapper'), board = document.getElementById('puzzle-board');
             wrapper.classList.add('active');
             let indices = [0,1,2,3,4,5,6,7,8].sort(() => Math.random() - 0.5);
-            
             indices.forEach((idx) => {
                 const piece = document.createElement('div');
                 piece.className = 'puzzle-piece';
@@ -226,17 +231,13 @@
                 piece.dataset.idx = idx;
                 piece.onclick = function() {
                     if(window.selected) {
-                        let tIdx = this.dataset.idx; let tBg = this.style.backgroundPosition;
+                        let tIdx = this.dataset.idx, tBg = this.style.backgroundPosition;
                         this.dataset.idx = window.selected.dataset.idx; this.style.backgroundPosition = window.selected.style.backgroundPosition;
                         window.selected.dataset.idx = tIdx; window.selected.style.backgroundPosition = tBg;
                         window.selected.classList.remove('selected'); window.selected = null;
                         if(Array.from(board.children).every((p, i) => parseInt(p.dataset.idx) === i)) {
-                            // เมื่อชนะ: ปิดจิ๊กซอว์ทิ้งถาวร
                             wrapper.classList.remove('active');
-                            setTimeout(() => { 
-                                wrapper.style.display = 'none';
-                                document.getElementById('content-box').classList.add('visible');
-                            }, 500);
+                            setTimeout(() => { wrapper.style.display = 'none'; document.getElementById('content-box').classList.add('visible'); }, 500);
                         }
                     } else { this.classList.add('selected'); window.selected = this; }
                 };
@@ -253,4 +254,3 @@
     </script>
 </body>
 </html>
-
